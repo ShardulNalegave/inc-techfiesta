@@ -4,6 +4,7 @@ import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import { icons } from '@/constants';
 const MapComponent = ({
+  settempo,
   mapRegion,
   waypoints,
   selectedLocation,
@@ -43,7 +44,7 @@ const MapComponent = ({
               }}
               title={point.name}
               description={`Waypoint ${index + 1}`}
-              pinColor="#00aaff"
+              pinColor="#00ffff"
             />
           ))}
 
@@ -58,11 +59,21 @@ const MapComponent = ({
               pinColor="#000000"
             />
           )}
-
-    
-          {policestations.length > 0 && policestations.map((data) => (
+          {settempo && (
             <Marker
-              key={data.name}
+              coordinate={{
+                latitude: settempo.latitude,
+                longitude: settempo.longitude,
+              }}
+              title={settempo.name}
+              pinColor="#000000"
+            />
+          )}
+            
+    
+          {policestations.length > 0 && policestations.map((data,index) => (
+            <Marker
+              key={index}
               coordinate={{
                 latitude: data.latitude,
                 longitude: data.longitude,
@@ -84,20 +95,21 @@ const MapComponent = ({
           ))}
 
          
-          {markers.map((marker, index) => {
-            const isStartOrEnd = index === 0 || index === markers.length - 1;
-            return (
-              <Marker
-                key={`marker-${index}`}
-                coordinate={{
-                  latitude: marker.latitude,
-                  longitude: marker.longitude,
-                }}
-                title={marker.name}
-                pinColor={isStartOrEnd ? 'red' : 'blue'}
-              />
-            );
-          })}
+{markers.map((marker, index) => {
+  const isStartOrEnd = index === 0 || index === markers.length - 1;
+  return (
+    <Marker
+      key={`marker-${index}`}
+      coordinate={{
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+      }}
+      title={marker.name}
+      pinColor={index === 0 ? 'red' : isStartOrEnd ? 'red' : 'blue'}
+    />
+  );
+})}
+
         </MapView>
       )}
     </View>
