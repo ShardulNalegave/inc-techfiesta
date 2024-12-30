@@ -2,7 +2,7 @@ import React from 'react';
 import { Image,View } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
-
+import { icons } from '@/constants';
 const MapComponent = ({
   mapRegion,
   waypoints,

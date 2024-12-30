@@ -340,81 +340,125 @@ const centerOnUser = () => {
   
 
   return (
-      <SafeAreaView className="flex-1">
-    <View className="flex-1 bg-black">
-    <View className="z-20 flex-col p-5">
+  <SafeAreaView className="flex-1">
+    <View className="flex-1 bg-gray-900">
+      {/* Search Container */}
+      <View className="z-20 p-4 bg-gray-800 backdrop-blur-lg border-b border-gray-700">
+        <View className="mb-4">
+          <Text className="text-blue-400 text-lg font-semibold mb-2">
+            Where would you like to go?
+          </Text>
+          <View className="flex-row items-center space-x-3">
+            <View className="flex-1 relative">
+              <View className="absolute left-3 top-3 z-10">
+                <Image
+                  source={icons.search}
+                  className="w-5 h-5 opacity-50"
+                  style={{ tintColor: '#60A5FA' }}
+                />
+              </View>
+              <TextInput
+                className="w-full pl-11 pr-4 py-3 bg-gray-700 rounded-xl border border-gray-600 text-base text-gray-100 shadow-sm"
+                placeholder="Search locations, landmarks, or addresses..."
+                placeholderTextColor="#60A5FA80"
+                value={searchText}
+                onChangeText={handleSearchTextChange}
+                onFocus={() => setShowSearchResults(true)}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            </View>
+            <TouchableOpacity
+              onPress={fetchRoute}
+              className="bg-blue-600 p-3 rounded-xl shadow-md active:bg-blue-700"
+            >
+              <View className="w-8 h-8 items-center justify-center">
+                <Image
+                  source={icons.search}
+                  className="w-5 h-5"
+                  style={{ tintColor: '#ffffff' }}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-  <View className="z-20 flex-row items-center space-x-4">
-    <TextInput
-      className="px-5 py-3 bg-[#e1f5fe] rounded-full border border-[#81d4fa] text-base text-[#37474f] shadow-sm w-4/5"
-      placeholder="Search for a location..."
-      placeholderTextColor="#a9a9a9"
-      value={searchText}
-      onChangeText={handleSearchTextChange}
-      onFocus={() => setShowSearchResults(true)}
-    />
-    <View className="flex-1">
-      <TouchableOpacity
-        onPress={fetchRoute}
-        style={{
-          backgroundColor: '#0288d1',
-          borderRadius: 50,
-          paddingVertical: 12,
-          paddingHorizontal: 20,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Image
-          source={icons.search}
-          style={{ width: 12, height: 12 }}
-          />
-  
-      </TouchableOpacity>
-    </View>
-  </View>
-
-  {showSearchResults && searchResults.length > 0 && (
-            <ScrollView className="left-0 right-0 max-h-[200px] mx-4 px-5 py-3 bg-black rounded-lg shadow border border-[#81d4fa] z-30">
+        {/* Enhanced Search Results */}
+        {showSearchResults && searchResults.length > 0 && (
+          <View className="mt-2">
+            <ScrollView
+              className="max-h-[300px] rounded-xl bg-gray-800 border border-gray-700 shadow-lg"
+              showsVerticalScrollIndicator={false}
+            >
               {searchResults.map((result, index) => (
                 <TouchableOpacity
-                key={index}
-                className="p-3 border-b border-[#cfd8dc]"
-                onPress={() => handleLocationSelect(result)}
+                  key={index}
+                  onPress={() => handleLocationSelect(result)}
+                  className={`px-4 py-3 flex-row items-center space-x-3 active:bg-gray-700
+                    ${index !== searchResults.length - 1 ? 'border-b border-gray-700' : ''}`}
                 >
-                  <Text numberOfLines={1} className="text-[#eaeaea]">
-                    {result.name}
-                  </Text>
+                  <View className="w-8 h-8 rounded-full bg-gray-700 items-center justify-center">
+                    <Image
+                      source={icons.location}
+                      className="w-4 h-4"
+                      style={{ tintColor: '#60A5FA' }}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-gray-100 text-base font-medium" numberOfLines={1}>
+                      {result.name || 'Unknown Location'}
+                    </Text>
+                    {result.address && (
+                      <Text className="text-gray-400 text-sm mt-0.5" numberOfLines={1}>
+                        {result.address}
+                      </Text>
+                    )}
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          )}
-</View>
-<View style={{ flex: 1 }}>
-      <Maptemm
-        mapRegion={mapRegion}
-        waypoints={waypoints}
-        selectedLocation={selectedLocation}
-        policestations={policestations}
-        showRoutes={showRoutes}
-        markers={markers}
-        mapRef={mapRef}
-        setMapRegion={setMapRegion}
-        setMapReady={setMapReady}
-      />
-     
-    </View>
-        <LoadingOverlay isVisible={isLoading} message="Finding the best route..." />
+          </View>
+        )}
+
+        {/* No Results State */}
+        {showSearchResults && searchResults.length === 0 && (
+          <View className="mt-4 p-4 rounded-xl bg-gray-800 border border-gray-700 shadow-md items-center">
+            <Text className="text-gray-400 text-sm">No results found. Try searching for a different location.</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Map View */}
+      <View className="flex-1">
+        <Maptemm
+          mapRegion={mapRegion}
+          waypoints={waypoints}
+          selectedLocation={selectedLocation}
+          policestations={policestations}
+          showRoutes={showRoutes}
+          markers={markers}
+          mapRef={mapRef}
+          setMapRegion={setMapRegion}
+          setMapReady={setMapReady}
+        />
+      </View>
+
+      {/* Loading Overlays */}
+      <LoadingOverlay isVisible={isLoading} message="Finding the best route..." />
       <LoadingOverlay isVisible={loading} message="Getting your location..." />
       <LoadingOverlay isVisible={policeloading} message="Getting the police stations..." />
-  
+
+      {/* Bottom Sheet */}
       <BottomSheet
-      onPolicePress={policecover}
-      onCenterPress={centerOnUser}
-      showPoliceStations={policestations}/>
+        onPolicePress={policecover}
+        onCenterPress={centerOnUser}
+        showPoliceStations={policestations}
+      />
     </View>
-      </SafeAreaView>
-  );
+  </SafeAreaView>
+);
+
+  
   
 };
 export default MapComponent;

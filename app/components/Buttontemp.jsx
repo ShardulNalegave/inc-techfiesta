@@ -1,14 +1,44 @@
-
-import { TouchableOpacity, Text, View, Image, ScrollView } from 'react-native'; 
-import { Animated, Dimensions } from 'react-native'; 
+import { TouchableOpacity, Text, View, Image, ScrollView, Dimensions, StyleSheet } from 'react-native';
+import { Animated } from 'react-native';
 import { useState, useRef } from 'react';
-
+import { images } from '../constants/index.js';
 
 const window = Dimensions.get('window');
-const MIDDLE_SCREEN_HEIGHT = window.height / 2;
-const BOTTOM_SHEET_MAX_HEIGHT = MIDDLE_SCREEN_HEIGHT;
+const BOTTOM_SHEET_MAX_HEIGHT = window.height * 0.7;
 const BOTTOM_SHEET_MIN_HEIGHT = 60;
-const MAX_UPWARD_TRANSLATE_Y = 0;
+
+const ActionButton = ({ onPress, title, icon, isSelected }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[
+      styles.actionButton,
+      { backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.8)' : 'rgba(45, 45, 45, 0.95)' }
+    ]}
+    activeOpacity={0.8}
+  >
+    <View style={styles.actionButtonContent}>
+      <View style={styles.iconContainer}>
+        <Image
+          source={icon}
+          style={[
+            styles.actionButtonIcon,
+            // { tintColor: isSelected ? '#ffffff' : '#e0e0e0' }
+          ]}
+          resizeMode="contain"
+        />
+      </View>
+      <Text 
+        style={[
+          styles.actionButtonText,
+          { color: isSelected ? '#ffffff' : '#e0e0e0' }
+        ]}
+        numberOfLines={1}
+      >
+        {title}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
 
 const BottomSheet = ({
   onPolicePress,
@@ -20,138 +50,187 @@ const BottomSheet = ({
   onsaferoutepress,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animation = useRef(new Animated.Value(0)).current;
 
   const toggleBottomSheet = () => {
     const toValue = isExpanded ? 0 : 1;
-    Animated.spring(animatedValue, {
+    
+    Animated.spring(animation, {
       toValue,
       useNativeDriver: false,
-      friction: 8,
-      tension: 70,
+      friction: 12,
+      tension: 65,
+      restDisplacementThreshold: 0.01,
+      restSpeedThreshold: 0.01,
     }).start();
+    
     setIsExpanded(!isExpanded);
   };
 
-  const translateY = animatedValue.interpolate({
+  const bottomSheetHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, MAX_UPWARD_TRANSLATE_Y], 
-  });
-
-  const height = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [BOTTOM_SHEET_MIN_HEIGHT, BOTTOM_SHEET_MAX_HEIGHT],
+    outputRange: [BOTTOM_SHEET_MIN_HEIGHT, BOTTOM_SHEET_MAX_HEIGHT]
   });
 
   return (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#1a1a1a',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        transform: [{ translateY }],
-        height,
-      }}
-    >
-      <TouchableOpacity onPress={toggleBottomSheet} style={{ paddingVertical: 8, alignItems: 'center' }}>
-        <View className="w-16 h-1.5 bg-white rounded-full" />
+    <Animated.View style={[styles.container, { height: bottomSheetHeight }]}>
+      
+      <TouchableOpacity 
+        onPress={toggleBottomSheet}
+        style={styles.handle}
+      >
+        <View style={styles.handleBar} />
+        <Text style={styles.handleText}>
+          {isExpanded ? 'Swipe down to close' : 'Swipe up for options'}
+        </Text>
       </TouchableOpacity>
 
-      <ScrollView contentContainerStyle={{ padding: 15 }}>
-        <Text className="text-white text-2xl font-bold mb-3">Quick Actions</Text>
-
-        {/* Police Stations & Places Section */}
-        <View className="mb-5">
-          <Text className="text-white text-lg mb-3">Police Stations & Places</Text>
-          <View className="flex flex-row flex-wrap gap-4">
-            <ActionButton
-              onPress={onPolicePress}
-              title={showPoliceStations?.length > 0 ? 'Hide Police Stations' : 'Show Police Stations'}
-              icon={{ uri: 'your-police-icon-path' }}
-              isSelected={showPoliceStations?.length > 0}
-            />
-            <ActionButton
-              onPress={onPublicPlacesPress}
-              title="Show Public Places"
-              icon={{ uri: 'your-public-place-icon-path' }}
-              isSelected={false}
-            />
-          </View>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+       
+        <Text style={styles.sectionTitle}>Police Stations & Places</Text>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            onPress={onPolicePress}
+            title={showPoliceStations?.length > 0 ? 'Hide Police' : 'Show Police'}
+            icon={images.policeimage}
+            isSelected={showPoliceStations?.length > 0}
+          />
+          <ActionButton
+            onPress={onPublicPlacesPress}
+            title="Public Places"
+            icon={images.policeimage}
+            isSelected={false}
+          />
         </View>
 
-        {/* Location Section */}
-        <View className="mb-5">
-          <Text className="text-white text-lg mb-3">Location</Text>
-          <View className="flex flex-row flex-wrap gap-4">
-            <ActionButton
-              onPress={onCenterPress}
-              title="Center on Me"
-              icon={{ uri: 'your-location-icon-path' }}
-              isSelected={false}
-            />
-          </View>
+    
+        <Text style={styles.sectionTitle}>Location</Text>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            onPress={onCenterPress}
+            title="Center on Me"
+            icon={images.centeronme}
+            isSelected={false}
+          />
         </View>
 
-        {/* Routes Section */}
-        <View>
-          <Text className="text-white text-lg mb-3">Routes</Text>
-          <View className="flex flex-row flex-wrap gap-4">
-            <ActionButton
-              onPress={onBestLightestRoutePress}
-              title="Best Lightest Route"
-              icon={{ uri: 'your-lightest-route-icon-path' }}
-              isSelected={false}
-            />
-            <ActionButton
-              onPress={onFastestRoutePress}
-              title="Fastest Route"
-              icon={{ uri: 'your-fastest-route-icon-path' }}
-              isSelected={false}
-            />
-            <ActionButton
-              onPress={onsaferoutepress}
-              title="saferoutepress"
-              icon={{ uri: 'your-fastest-route-icon-path' }}
-              isSelected={false}
-            />
-          </View>
+        <Text style={styles.sectionTitle}>Routes</Text>
+        <View style={[styles.buttonRow, styles.lastButtonRow]}>
+          <ActionButton
+            onPress={onBestLightestRoutePress}
+            title="Best Lit Route"
+            icon={images.lightroute}
+            isSelected={false}
+          />
+          <ActionButton
+            onPress={onFastestRoutePress}
+            title="Fastest Route"
+            icon={images.fastestroute}
+            isSelected={false}
+          />
+          <ActionButton
+            onPress={onsaferoutepress}
+            title="Safe Route"
+            icon={images.saferoute}
+            isSelected={false}
+          />
         </View>
       </ScrollView>
     </Animated.View>
   );
 };
 
-const ActionButton = ({ onPress, title, icon, isSelected }) => {
-  const activeButtonStyle = isSelected
-    ? { backgroundColor: '#0ba6ff' } // Active color
-    : { backgroundColor: '#5fb9ed' }; // Inactive color
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#161622',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -3,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  handle: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  handleBar: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 2,
+  },
+  handleText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginTop: 16,
+    letterSpacing: 0.3,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  lastButtonRow: {
+    marginBottom: 30,
+  },
+  actionButton: {
+    width: '48%',
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  actionButtonContent: {
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  actionButtonIcon: {
+    width: 24,
+    height: 24,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
+    letterSpacing: 0.3,
+  },
+});
 
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[{ paddingVertical: 12, paddingHorizontal: 15, borderRadius: 10, width: '45%' }, activeButtonStyle]}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Image source={icon} style={{ width: 24, height: 24, marginRight: 10 }} />
-        <View className='flex-1'>
-        <Text
-          className="text-white text-lg font-medium"
-          numberOfLines={1}
-          ellipsizeMode="tail" 
-          >
-          {title}
-        </Text>
-          </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-export default BottomSheet
+export default BottomSheet;
