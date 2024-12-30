@@ -39,18 +39,19 @@ export const safeMapStyle = [
 
   export const ROUTESFetch =async(startLocation,endLocation,type)=>{
     //type yaha pai hai like safest route /lightest route
-    return [
-      { latitude: 18.4520, longitude: 73.8506, name: "Near Katraj Lake" },
-      { latitude: 18.4565, longitude: 73.8537, name: "Near Katraj Chowk" },
-      { latitude: 18.4628, longitude: 73.8569, name: "Near Bharati Vidyapeeth" },
-      { latitude: 18.4705, longitude: 73.8602, name: "Near Balaji Nagar" },
-      { latitude: 18.4783, longitude: 73.8625, name: "Near Padmavati" },
-      { latitude: 18.4867, longitude: 73.8663, name: "Near Bibwewadi" },
-      { latitude: 18.4951, longitude: 73.8689, name: "Near Market Yard" },
-      { latitude: 18.5036, longitude: 73.8718, name: "Near Swargate" },
-      { latitude: 18.5117, longitude: 73.8754, name: "Near Shaniwar Wada" },
-      { latitude: 18.5204, longitude: 73.8567, name: "Pune Station" },
+    //startLocation.latitude tujhe latitude de dega and startLocation.longitude tujhe longitude de daga and similar for endlocation
+    return[
+      { latitude: 22.5958, longitude: 88.2636, name: "Howrah Bridge" },
+      { latitude: 22.5448, longitude: 88.3426, name: "Victoria Memorial" },
+      { latitude: 22.5645, longitude: 88.3433, name: "Eden Gardens" },
+      { latitude: 22.5542, longitude: 88.3639, name: "Park Street" },
+      { latitude: 22.6515, longitude: 88.3560, name: "Dakshineswar Temple" },
+      { latitude: 22.5727, longitude: 88.3997, name: "Science City" },
+      { latitude: 22.5958, longitude: 88.3771, name: "Salt Lake City" },
+      { latitude: 22.5769, longitude: 88.3793, name: "Nicco Park" },
+      { latitude: 22.5854, longitude: 88.3172, name: "Alipore Zoo" }
     ];
+    
   }
 
 
