@@ -1,8 +1,15 @@
 import express from 'express';
-import { UsersController } from '../controllers/users.js';
+import { AuthMiddleware, RequireAuth, RequireNoAuth } from '../middlewares/auth.js';
+import { registerUser, loginUser, getUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
-router.use('/', express.json(), UsersController);
+// Apply AuthMiddleware to all routes to extract JWT data
+router.use(AuthMiddleware);
+
+router.post('/register', registerUser);
+router.post('/login', RequireNoAuth, loginUser);
+router.get('/getUser', RequireAuth, getUser);
+router.delete('/deleteUser', RequireAuth, loginUser);
 
 export default router;
