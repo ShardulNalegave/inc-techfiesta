@@ -8,7 +8,7 @@ import { useRecoilState } from "recoil";
 import { Redirect } from "expo-router";
 import {isloggedd } from "../constants/atoms.js";
 // import buttonn from '../components/Buttontemp'
-import Buttontemp from '../components/Buttontemp'
+import Buttontemp from '../components/CustomButton2'
 import CustomButton from '../components/CustomButton'
 const Welcome = () => {
   const [islogge,setislogge] = useRecoilState(isloggedd);
