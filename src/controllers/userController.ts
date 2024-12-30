@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { hashPassword, comparePassword } from '../utils/password';
+import { hashPassword, comparePassword } from '../utils/password.js';
 import { NextFunction, Request, Response } from 'express';
-import { UserRegistrationData } from '../types/user';
-import { usersTable } from '../db/schema';
+import { UserRegistrationData } from '../types/user.js';
+import { usersTable } from '../db/schema.js';
 import { eq, or } from 'drizzle-orm';
 import { JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
@@ -34,8 +34,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       )
       .limit(1);
 
-    if (existingUser) {
-      res.status(400).json({ message: 'User with this email or phone already exists.' });
+    if (existingUser.length > 0) {
+      res.status(400).json({
+        message: 'User with this email or phone already exists.'
+      });
       return;
     }
 
@@ -45,7 +47,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     // Insert new user into the database
     const [newUser] = await req.db
       .insert(usersTable)
-      .values({ name, email, phone, passwordHash: hashedPassword })
+      .values({ name, email, phone, passwordhash: hashedPassword })
       .returning();
 
     const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -104,7 +106,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     }
 
     // Verify the password
-    const isPasswordValid = await comparePassword(password, user.passwordHash);
+    const isPasswordValid = await comparePassword(password, user.passwordhash);
 
     if (!isPasswordValid) {
       res.status(401).json({ message: 'Invalid email or password.' });
@@ -148,10 +150,18 @@ export const getUser = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
 
+    if (!req.authData) {
+      res.status(401).json({ message: 'Unauthorized access. Please log in.' });
+      return;
+    }
+
     // Retrieve all users from the database
-    const user = await req.db.select({
-      id: req.authData.id
-    }).from(usersTable);
+    const user = await req.db.select().from(usersTable).where(eq(usersTable.id, req.authData.id)).limit(1);
+
+    if (user.length === 0) {
+      res.status(404).json({ message: 'User not found.' });
+      return;
+    }
 
     // Respond with success
     res.status(200).json({
@@ -179,7 +189,11 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
     res.status(500).json({ message: 'Database connection is unavailable.' });
     return;
   }
-  const userId = req.authData?.userId; // Assuming userId is stored in JWT payload
+  if (!req.authData) {
+    res.status(401).json({ message: 'Unauthorized access. Please log in.' });
+    return;
+  }
+  const userId = req.authData?.id; // Assuming userId is stored in JWT payload
 
   if (!userId) {
     res.status(400).json({ message: 'User not authenticated.' });

@@ -1,7 +1,7 @@
 
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import { Logger } from 'pino';
-import { IAuthData } from '../middlewares/auth';
+import { IAuthData } from '../types/IAuthData.js';
 import { Driver } from 'neo4j-driver';
 
 export {};
