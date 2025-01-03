@@ -48,6 +48,8 @@ const BottomSheet = ({
   onBestLightestRoutePress,
   onFastestRoutePress,
   onsaferoutepress,
+  routetype,
+  setroutetype
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -72,9 +74,24 @@ const BottomSheet = ({
     outputRange: [BOTTOM_SHEET_MIN_HEIGHT, BOTTOM_SHEET_MAX_HEIGHT]
   });
 
+  const getRouteTitle = (type) => {
+    if (type === 'lighting') {
+      return routetype === 'lighting' ? 'Hide Lit Route' : 'Best Lit Route';
+    }
+    if (type === 'fast') {
+      return routetype === 'fast' ? 'Hide Fast Route' : 'Fastest Route';
+    }
+    if (type === 'safe') {
+      return routetype === 'safe' ? 'Hide Safe Route' : 'Safe Route';
+    }
+    if(type=='crime'){
+      return routetype==='crime'?'Hide crime Route':"Least crime route"
+    }
+    return '';
+  };
+
   return (
     <Animated.View style={[styles.container, { height: bottomSheetHeight }]}>
-      
       <TouchableOpacity 
         onPress={toggleBottomSheet}
         style={styles.handle}
@@ -90,7 +107,6 @@ const BottomSheet = ({
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-       
         <Text style={styles.sectionTitle}>Police Stations & Places</Text>
         <View style={styles.buttonRow}>
           <ActionButton
@@ -107,7 +123,6 @@ const BottomSheet = ({
           />
         </View>
 
-    
         <Text style={styles.sectionTitle}>Location</Text>
         <View style={styles.buttonRow}>
           <ActionButton
@@ -121,22 +136,40 @@ const BottomSheet = ({
         <Text style={styles.sectionTitle}>Routes</Text>
         <View style={[styles.buttonRow, styles.lastButtonRow]}>
           <ActionButton
-            onPress={onBestLightestRoutePress}
-            title="Best Lit Route"
+            onPress={() => {
+              setroutetype(routetype === 'lighting' ? null : 'lighting');
+              // onBestLightestRoutePress?.();
+            }}
+            title={getRouteTitle('lighting')}
             icon={images.lightroute}
-            isSelected={false}
+            isSelected={routetype === 'lighting'}
           />
           <ActionButton
-            onPress={onFastestRoutePress}
-            title="Fastest Route"
+            onPress={() => {
+              setroutetype(routetype === 'fast' ? null : 'fast');
+              // onFastestRoutePress?.();
+            }}
+            title={getRouteTitle('fast')}
             icon={images.fastestroute}
-            isSelected={false}
+            isSelected={routetype === 'fast'}
           />
           <ActionButton
-            onPress={onsaferoutepress}
-            title="Safe Route"
+            onPress={() => {
+              setroutetype(routetype === 'safe' ? null : 'safe');
+              // onsaferoutepress?.();
+            }}
+            title={getRouteTitle('safe')}
             icon={images.saferoute}
-            isSelected={false}
+            isSelected={routetype === 'safe'}
+          />
+          <ActionButton
+            onPress={() => {
+              setroutetype(routetype === 'crime' ? null : 'crime');
+              
+            }}
+            title={getRouteTitle('crime')}
+            icon={images.saferoute}
+            isSelected={routetype === 'crime'}
           />
         </View>
       </ScrollView>

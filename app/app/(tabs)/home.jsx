@@ -28,6 +28,7 @@ import { ROUTESFetch, safeMapStyle } from '../../constants/func'
 const MapComponent = () => {
   const [userLocation, setUserLocation] = useRecoilState(userLocationatom);
   const [mapRegion, setMapRegion] = useState(null);
+  const [routetype,setroutetype]=useState("safe");
   const [loading, setLoading] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const [policeloading, setpoliceLoading] = useState(false);
@@ -157,7 +158,7 @@ const MapComponent = () => {
   const fetchRouteBetweenLocations = async (startLocation, endLocation) => {
     setIsLoading(true);
     try {
-      const type = "safest route";
+      // const type = "safest route";
       // console.log(startLocation)
       //const predefinedPlaces = await ROUTESFetch(startLocation, endLocation, type);
 
@@ -166,6 +167,49 @@ const MapComponent = () => {
         //...predefinedPlaces,
         { ...endLocation, name: "End Location" },
       ];
+      if (routetype === "fast") {
+        try {
+          const coordinates = allPoints
+            .map(point => `${point.longitude},${point.latitude}`)
+            .join(';');
+  
+          const response = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true`
+          );
+  
+          if (!response.ok) {
+            throw new Error("Failed to fetch the fast route");
+          }
+  
+          const data = await response.json();
+  
+          if (data.routes && data.routes[0]) {
+            const newRoute = data.routes[0].geometry.coordinates.map(([longitude, latitude]) => ({
+              latitude,
+              longitude,
+            }));
+            setShowRoutes([newRoute]);
+  
+            if (mapRef.current && newRoute.length > 0) {
+              mapRef.current.fitToCoordinates(newRoute, {
+                edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                animated: true,
+              });
+            }
+  
+            setMarkers(allPoints);
+            setIsLoading(false);
+          } else {
+            Alert.alert('Error', 'No route found between these locations');
+          }
+          return;
+        } catch (error) {
+          console.error("Fast route error:", error);
+          Alert.alert("Error", "Failed to fetch the fast route");
+          setIsLoading(false);
+          return;
+        }
+      }
 
       const coordinates = allPoints.map(point => [point.latitude, point.longitude]);
 
@@ -175,9 +219,9 @@ const MapComponent = () => {
         `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true`
       );
       const data = await response.json(); */
-
-      const roadNearStartResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[0][0]}&longitude=${coordinates[0][1]}`);
-      const roadNearEndResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[1][0]}&longitude=${coordinates[1][1]}`);
+      console.log(routetype)
+      const roadNearStartResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[0][0]}&longitude=${coordinates[0][1]}&type=${routetype}`);
+      const roadNearEndResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[1][0]}&longitude=${coordinates[1][1]}&type=${routetype}`);
 
       // Extract data
       const roadNearStartData = roadNearStartResponse.data;
@@ -474,9 +518,13 @@ const MapComponent = () => {
 
 
         <BottomSheet
+          routetype={routetype}
+          setroutetype={setroutetype}
           onPolicePress={policecover}
           onCenterPress={centerOnUser}
           showPoliceStations={policestations}
+          // onBestLightestRoutePress={onBestLightestRoutePress}
+          // oncrimeroutepress={oncrimeroutepress}
         />
       </View>
     </SafeAreaView>
