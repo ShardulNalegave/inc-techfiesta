@@ -219,9 +219,8 @@ const MapComponent = () => {
         `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true`
       );
       const data = await response.json(); */
-      console.log(routetype)
-      const roadNearStartResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[0][0]}&longitude=${coordinates[0][1]}&type=${routetype}`);
-      const roadNearEndResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[1][0]}&longitude=${coordinates[1][1]}&type=${routetype}`);
+      const roadNearStartResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[0][0]}&longitude=${coordinates[0][1]}`);
+      const roadNearEndResponse = await axios.get(`http://192.168.29.208:8000/roads/roadByProximity?latitude=${coordinates[1][0]}&longitude=${coordinates[1][1]}`);
 
       // Extract data
       const roadNearStartData = roadNearStartResponse.data;
@@ -238,14 +237,12 @@ const MapComponent = () => {
       const startId = roadNearStartOsmIds[0].low != 0 ? roadNearStartOsmIds[0].low : roadNearStartOsmIds[0].high;
       const endId = roadNearEndOsmIds[0].low != 0 ? roadNearEndOsmIds[0].low : roadNearEndOsmIds[0].high;
 
-      const routeData = await axios.get(`http://192.168.29.208:8000/roads/dijkstraWithLogs?startId=${startId}&endId=${endId}`);
+      const routeData = await axios.get(`http://192.168.29.208:8000/roads/dijkstraWithLogs?startId=${startId}&endId=${endId}&type=${routetype}`);
 
       if (routeData.data && routeData.data.length > 0) {
 
         // Use transformPathData to format the API response
         const newRoute = transformPathData(routeData.data);
-
-        console.log(newRoute);
 
         setShowRoutes([newRoute]);
 

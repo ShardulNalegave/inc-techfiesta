@@ -35,9 +35,24 @@ router.get('/dijkstra', async (req, res) => {
 });
 
 router.get('/dijkstraWithLogs', async (req, res) => {
-    const { startId, endId } = req.query;
-    const result = await roadController.runDijkstraWithLogs(Number(startId), Number(endId));
-    res.json(result.records);
+    const { startId, endId, type } = req.query;
+    if (type === 'safe') {
+        const result = await roadController.runDijkstraSafest(Number(startId), Number(endId));
+        res.json(result.records);
+    }
+    else if (type === 'crime') {
+        const result = await roadController.runDijkstraLeastCrime(Number(startId), Number(endId));
+        res.json(result.records);
+    }
+    else if (type === 'accident') {
+        const result = await roadController.runDijkstraLeastAccident(Number(startId), Number(endId));
+        res.json(result.records);
+    }
+    else if (type === 'lighting') {
+        const result = await roadController.runDijkstraStreetLight(Number(startId), Number(endId));
+        res.json(result.records);
+    }
+    return;
 });
 
 export default router;
