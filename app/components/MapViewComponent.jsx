@@ -12,6 +12,7 @@ const MapComponent = ({
   showRoutes,
   markers,
   mapRef,
+  publicplace,
   setMapRegion,
   setMapReady,
 }) => {
@@ -81,6 +82,18 @@ const MapComponent = ({
               title={data.name}
             >
               <Image source={icons.police} className="w-10 h-10" />
+            </Marker>
+          ))}
+          {publicplace.length > 0 && publicplace.map((data,index) => (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: data.latitude,
+                longitude: data.longitude,
+              }}
+              title={data.name}
+            >
+              <Image source={icons.safetyimage} className="w-10 h-10" />
             </Marker>
           ))}
 

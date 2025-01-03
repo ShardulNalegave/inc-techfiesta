@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { images } from '../constants/index.js';
 
 const window = Dimensions.get('window');
-const BOTTOM_SHEET_MAX_HEIGHT = window.height * 0.7;
+const BOTTOM_SHEET_MAX_HEIGHT = window.height * 0.5;
 const BOTTOM_SHEET_MIN_HEIGHT = 60;
 
 const ActionButton = ({ onPress, title, icon, isSelected }) => (
@@ -42,12 +42,9 @@ const ActionButton = ({ onPress, title, icon, isSelected }) => (
 
 const BottomSheet = ({
   onPolicePress,
-  onCenterPress,
+  showpublicplaces,
   showPoliceStations,
   onPublicPlacesPress,
-  onBestLightestRoutePress,
-  onFastestRoutePress,
-  onsaferoutepress,
   routetype,
   setroutetype
 }) => {
@@ -84,11 +81,15 @@ const BottomSheet = ({
     if (type === 'safe') {
       return routetype === 'safe' ? 'Hide Safe Route' : 'Safe Route';
     }
-    if(type=='crime'){
-      return routetype==='crime'?'Hide crime Route':"Least crime route"
+    if (type === 'crime') {
+      return routetype === 'crime' ? 'Hide Crime Route' : 'Least Crime Route';
+    }
+    if (type === 'accident') {
+      return routetype === 'accident' ? 'Hide Least Accident Route' : 'Least Accident Route';
     }
     return '';
   };
+  
 
   return (
     <Animated.View style={[styles.container, { height: bottomSheetHeight }]}>
@@ -117,13 +118,13 @@ const BottomSheet = ({
           />
           <ActionButton
             onPress={onPublicPlacesPress}
-            title="Public Places"
+            title={showpublicplaces?.length > 0 ? 'Hide Public Places' : 'Show Public Places'}
             icon={images.policeimage}
-            isSelected={false}
+            isSelected={showpublicplaces?.length>0}
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Location</Text>
+        {/* <Text style={styles.sectionTitle}>Location</Text>
         <View style={styles.buttonRow}>
           <ActionButton
             onPress={onCenterPress}
@@ -131,7 +132,7 @@ const BottomSheet = ({
             icon={images.centeronme}
             isSelected={false}
           />
-        </View>
+        </View> */}
 
         <Text style={styles.sectionTitle}>Routes</Text>
         <View style={[styles.buttonRow, styles.lastButtonRow]}>
@@ -170,6 +171,15 @@ const BottomSheet = ({
             title={getRouteTitle('crime')}
             icon={images.saferoute}
             isSelected={routetype === 'crime'}
+          />
+          <ActionButton
+            onPress={() => {
+              setroutetype(routetype === 'accident' ? null : 'accident');
+              
+            }}
+            title={getRouteTitle('accident')}
+            icon={images.saferoute}
+            isSelected={routetype === 'accident'}
           />
         </View>
       </ScrollView>

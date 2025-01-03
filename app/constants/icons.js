@@ -14,12 +14,14 @@ import whitepolice from '../assets/icons/whitepolice.png'
 import blacpolice from  '../assets/icons/blackpolice.png'
 import bluepolice from '../assets/icons/bluepolice.jpg'
 import police from '../assets/icons/police.jpg'
+import safetyimage from '../assets/icons/safety.png'
 export default {
   home,
   profile,
   search,
 menu,
 bluepolice,
+safetyimage,
 police,
   eyeHide,
   eye,

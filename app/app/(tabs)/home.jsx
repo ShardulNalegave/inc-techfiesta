@@ -9,7 +9,7 @@ import {
 
   View,
   Alert,
-
+Dimensions,
   Text,
   TouchableOpacity,
   TextInput,
@@ -32,10 +32,12 @@ const MapComponent = () => {
   const [loading, setLoading] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const [policeloading, setpoliceLoading] = useState(false);
+  const [policestations, setpolicestations] = useState([]);
+  const [publicplaceLoading,setpublicplaceloading]=useState(false);
+  const [publicplace,setpublicplace]=useState([])
   const [isLoading, setIsLoading] = useState(false);
   const [showRoutes, setShowRoutes] = useState([]);
   const [waypoints, setWaypoints] = useState([]);
-  const [policestations, setpolicestations] = useState([]);
   const mapRef = useRef(null);
   const [markers, setMarkers] = useState([]);
   const [destination, setDestination] = useState(null);
@@ -118,6 +120,33 @@ const MapComponent = () => {
     await fetchRouteBetweenLocations(startLocation, destination);
   };
 
+  const fetchpublicplace = async (latitude, longitude) => {
+    try {
+      if (publicplace.length > 0) {
+        setpublicplace([]);
+        return;
+      }
+      setpublicplaceloading(true);
+      const response = await fetch(
+        `https://api.geoapify.com/v2/places?categories=leisure,healthcare&filter=circle:${longitude},${latitude},10000&limit=10&apiKey=${api}`
+      );
+      // console.log(response)
+      const data = await response.json();
+      if (data.features) {
+        const newWaypoints = data.features.map(feature => ({
+          latitude: feature.properties.lat,
+          longitude: feature.properties.lon,
+          name: feature.properties.name || 'Unnamed Police Station',
+        }));
+        setpublicplace(newWaypoints);
+      }
+    } catch (error) {
+      console.error('Error fetching police stations:', error);
+      Alert.alert('Error', 'Failed to fetch police stations');
+    } finally {
+     setpublicplaceloading(false);
+    }
+  };
   const fetchpolice = async (latitude, longitude) => {
     try {
       if (policestations.length > 0) {
@@ -147,7 +176,7 @@ const MapComponent = () => {
 
   const transformPathData = (apiResponse) => {
     return apiResponse.map((entry) => {
-      const position = entry._fields[1]; // Accessing the "position" field
+      const position = entry._fields[1]; 
       return {
         latitude: position.y,
         longitude: position.x,
@@ -278,6 +307,18 @@ const MapComponent = () => {
       Alert.alert('Error', 'Could not fetch police stations');
     }
   };
+  const publiclocationcover=async () => {
+    try {
+      if (!startLocation) {
+        Alert.alert('Error', 'Please select a starting location first');
+        return;
+      }
+      await fetchpublicplace(startLocation.latitude, startLocation.longitude);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Could not fetch police stations');
+    }
+  };
   const getLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -336,40 +377,22 @@ const MapComponent = () => {
     };
   }, []);
 
+
+  const { width, height } = Dimensions.get('window');
+
+
   return (
-    <SafeAreaView className="flex-1">
-      <View className="flex-1 bg-gray-900">
-        <View className="z-20 p-4 bg-gray-800/95 backdrop-blur-xl border-b border-gray-700" style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5
-        }}>
+    <SafeAreaView className="flex-1 bg-gray-900">
+      <View className="flex-1">
+        {/* Header Section */}
+        <View className="z-20 p-4 bg-gray-800/95 backdrop-blur-xl border-b border-gray-700 shadow-lg">
           <Text className="text-blue-400 text-xl font-bold mb-4">Plan Your Journey</Text>
 
+          {/* Starting Point Input */}
           <View className="flex-row items-center space-x-3 mb-4">
             <View className="flex-1 relative">
-              <View className="absolute left-3 top-3 z-10">
-                <View className="w-6 h-6 rounded-full bg-blue-600 items-center justify-center" style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 1.41,
-                  elevation: 2
-                }}>
-                  <Text className="text-white text-sm font-bold">A</Text>
-                </View>
-              </View>
               <TextInput
-                className="w-full pl-12 pr-4 py-3.5 bg-gray-700/90 rounded-2xl border border-gray-600/50 text-base text-gray-100"
-                style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5
-                }}
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-700/90 rounded-2xl border border-gray-600/50 text-base text-gray-100 shadow-lg"
                 placeholder="Enter starting point..."
                 placeholderTextColor="#60A5FA60"
                 value={startLocationText}
@@ -378,31 +401,19 @@ const MapComponent = () => {
                 autoCorrect={false}
                 autoCapitalize="none"
               />
+              <View className="absolute left-3 top-3 z-10">
+                <View className="w-6 h-6 rounded-full bg-blue-600 items-center justify-center shadow-md">
+                  <Text className="text-white text-sm font-bold">A</Text>
+                </View>
+              </View>
             </View>
           </View>
 
+          {/* Destination Input */}
           <View className="flex-row items-center space-x-3">
             <View className="flex-1 relative">
-              <View className="absolute left-3 top-3 z-10">
-                <View className="w-6 h-6 rounded-full bg-blue-600 items-center justify-center" style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 1.41,
-                  elevation: 2
-                }}>
-                  <Text className="text-white text-sm font-bold">B</Text>
-                </View>
-              </View>
               <TextInput
-                className="w-full pl-12 pr-4 py-3.5 bg-gray-700/90 rounded-2xl border border-gray-600/50 text-base text-gray-100"
-                style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5
-                }}
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-700/90 rounded-2xl border border-gray-600/50 text-base text-gray-100 shadow-lg"
                 placeholder="Enter destination..."
                 placeholderTextColor="#60A5FA60"
                 value={searchText}
@@ -411,45 +422,36 @@ const MapComponent = () => {
                 autoCorrect={false}
                 autoCapitalize="none"
               />
+              <View className="absolute left-3 top-3 z-10">
+                <View className="w-6 h-6 rounded-full bg-blue-600 items-center justify-center shadow-md">
+                  <Text className="text-white text-sm font-bold">B</Text>
+                </View>
+              </View>
             </View>
             <TouchableOpacity
               onPress={fetchRoute}
-              className="bg-blue-600 p-4 rounded-2xl active:bg-blue-700"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5
-              }}>
-              <Image
-                source={icons.search}
-                className="w-6 h-6"
-                style={{ tintColor: '#ffffff' }}
-              />
+              className="bg-blue-600 p-4 rounded-2xl active:bg-blue-700 shadow-lg"
+            >
+              <Image source={icons.search} className="w-6 h-6 tint-white" />
             </TouchableOpacity>
           </View>
 
+          {/* Start Location Results */}
           {showStartLocationResults && startLocationResults.length > 0 && (
-            <View className="mt-3 rounded-2xl overflow-hidden bg-gray-800/95 border border-gray-700/50" style={{
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4.65,
-              elevation: 8
-            }}>
+            <View className="mt-3 rounded-2xl overflow-hidden bg-gray-800/95 border border-gray-700/50 shadow-xl">
               <ScrollView className="max-h-[250px]" showsVerticalScrollIndicator={false}>
                 {startLocationResults.map((result, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleStartLocationSelect(result)}
-                    className={`px-4 py-3.5 flex-row items-center space-x-3 active:bg-gray-700/80
-             ${index !== startLocationResults.length - 1 ? 'border-b border-gray-700/50' : ''}`}>
+                    className={`px-4 py-3.5 flex-row items-center space-x-3 active:bg-gray-700/80 ${
+                      index !== startLocationResults.length - 1 ? 'border-b border-gray-700/50' : ''
+                    }`}
+                  >
                     <View className="w-8 h-8 rounded-full bg-gray-700/80 items-center justify-center">
                       <Image
                         source={icons.location}
-                        className="w-4 h-4"
-                        style={{ tintColor: '#60A5FA' }}
+                        className="w-4 h-4 tint-blue-400"
                       />
                     </View>
                     <Text className="flex-1 text-gray-100 text-base font-medium" numberOfLines={1}>
@@ -461,26 +463,22 @@ const MapComponent = () => {
             </View>
           )}
 
+          {/* Destination Results */}
           {showSearchResults && searchResults.length > 0 && (
-            <View className="mt-3 rounded-2xl overflow-hidden bg-gray-800/95 border border-gray-700/50" style={{
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4.65,
-              elevation: 8
-            }}>
+            <View className="mt-3 rounded-2xl overflow-hidden bg-gray-800/95 border border-gray-700/50 shadow-xl">
               <ScrollView className="max-h-[250px]" showsVerticalScrollIndicator={false}>
                 {searchResults.map((result, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleLocationSelect(result)}
-                    className={`px-4 py-3.5 flex-row items-center space-x-3 active:bg-gray-700/80
-             ${index !== searchResults.length - 1 ? 'border-b border-gray-700/50' : ''}`}>
+                    className={`px-4 py-3.5 flex-row items-center space-x-3 active:bg-gray-700/80 ${
+                      index !== searchResults.length - 1 ? 'border-b border-gray-700/50' : ''
+                    }`}
+                  >
                     <View className="w-8 h-8 rounded-full bg-gray-700/80 items-center justify-center">
                       <Image
                         source={icons.location}
-                        className="w-4 h-4"
-                        style={{ tintColor: '#60A5FA' }}
+                        className="w-4 h-4 tint-blue-400"
                       />
                     </View>
                     <Text className="flex-1 text-gray-100 text-base font-medium" numberOfLines={1}>
@@ -493,6 +491,7 @@ const MapComponent = () => {
           )}
         </View>
 
+        {/* Map Section */}
         <View className="flex-1">
           <Maptemm
             mapRegion={mapRegion}
@@ -500,6 +499,7 @@ const MapComponent = () => {
             settempo={temp}
             selectedLocation={selectedLocation}
             policestations={policestations}
+            publicplace={publicplace}
             showRoutes={showRoutes}
             markers={markers}
             mapRef={mapRef}
@@ -508,20 +508,21 @@ const MapComponent = () => {
           />
         </View>
 
-
+        {/* Loading Overlays */}
         <LoadingOverlay isVisible={isLoading} message="Finding the best route..." />
         <LoadingOverlay isVisible={loading} message="Getting your location..." />
         <LoadingOverlay isVisible={policeloading} message="Getting the police stations..." />
+        <LoadingOverlay isVisible={publicplaceLoading} message="Getting the public places..."/>
 
-
+        {/* Bottom Sheet */}
         <BottomSheet
           routetype={routetype}
           setroutetype={setroutetype}
           onPolicePress={policecover}
           onCenterPress={centerOnUser}
           showPoliceStations={policestations}
-          // onBestLightestRoutePress={onBestLightestRoutePress}
-          // oncrimeroutepress={oncrimeroutepress}
+          onPublicPlacesPress={publiclocationcover}
+          showpublicplaces={publicplace}
         />
       </View>
     </SafeAreaView>
